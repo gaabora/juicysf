@@ -20,47 +20,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-12, windows-2022]
+        os: [windows-2022]
         include:
          
-          - os: macos-12
-            name: mac
-            generator: Unix Makefiles
-            flags: |
-              -DBUILD_SHARED_LIBS=on \
-              -Denable-portaudio=off \
-              -Denable-dbus=off \
-              -Denable-aufile=off \
-              -Denable-ipv6=off \
-              -Denable-jack=off \
-              -Denable-ladspa=off \
-              -Denable-libinstpatch=off \
-              -Denable-libsndfile=on \
-              -Denable-midishare=off \
-              -Denable-opensles=off \
-              -Denable-oboe=off \
-              -Denable-network=off \
-              -Denable-oss=off \
-              -Denable-dsound=off \
-              -Denable-wasapi=off \
-              -Denable-waveout=off \
-              -Denable-winmidi=off \
-              -Denable-sdl2=off \
-              -Denable-pkgconfig=on \
-              -Denable-pulseaudio=off \
-              -Denable-readline=off \
-              -Denable-threads=on \
-              -Denable-openmp=on \
-              -Denable-coreaudio=off \
-              -Denable-coremidi=off \
-              -Denable-framework=on \
-              -Denable-lash=off \
-              -Denable-alsa=off \
-              -Denable-systemd=off \
-            install_deps: ~/deps
-            install_path: ~/juicydeps
-            path: ./build/JuicySFPlugin_artefacts/Release
-            
           - os: windows-2022
             name: win
             generator: Visual Studio 17 2022
@@ -73,11 +35,6 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: recursive
-
-      - name: Install macOS dependencies
-        if: matrix.os == 'macos-12'
-        run: |
-          brew install fluidsynth pkg-config cmake pulseaudio portaudio jack dbus sdl2
 
       - name: Install Windows dependencies
         if: matrix.os == 'windows-2022'
