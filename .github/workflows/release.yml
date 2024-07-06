@@ -20,45 +20,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, macos-latest, windows-latest]
+        os: [macos-latest, windows-latest]
         include:
-          - os: ubuntu-20.04
-            name: linux
-            generator: Unix Makefiles
-            flags: |
-              -DBUILD_SHARED_LIBS=off \
-              -Denable-portaudio=off \
-              -Denable-dbus=off \
-              -Denable-aufile=off \
-              -Denable-ipv6=off \
-              -Denable-jack=off \
-              -Denable-ladspa=off \
-              -Denable-libinstpatch=off \
-              -Denable-libsndfile=on \
-              -Denable-midishare=off \
-              -Denable-opensles=off \
-              -Denable-oboe=off \
-              -Denable-network=off \
-              -Denable-oss=off \
-              -Denable-dsound=off \
-              -Denable-wasapi=off \
-              -Denable-waveout=off \
-              -Denable-winmidi=off \
-              -Denable-sdl2=off \
-              -Denable-pkgconfig=on \
-              -Denable-pulseaudio=off \
-              -Denable-readline=off \
-              -Denable-threads=on \
-              -Denable-openmp=on \
-              -Denable-coreaudio=off \
-              -Denable-coremidi=off \
-              -Denable-framework=on \
-              -Denable-lash=off \
-              -Denable-alsa=off \
-              -Denable-systemd=off \
-            install_deps: ~/deps
-            install_path: ~/juicydeps
-            path: ./build/JuicySFPlugin_artefacts/Release
+         
           - os: macos-latest
             name: mac
             generator: Unix Makefiles
@@ -108,11 +72,6 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: recursive
-
-      - name: Install Linux dependencies
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get update && sudo apt-get install cmake-data cmake libglib2.0-0 libsndfile-dev libasound2-dev libjack-dev portaudio19-dev libsdl2-dev libpulse-dev libdbus-1-dev libsystemd-dev libinstpatch-dev libreadline-dev g++-7 g++-8 clang-7 clang-8 clang-9 clang-10 clang-tidy-10 ladspa-sdk
 
       - name: Install macOS dependencies
         if: matrix.os == 'macos-latest'
