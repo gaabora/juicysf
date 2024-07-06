@@ -19,9 +19,9 @@ namespace Util {
 
   inline String getHomeDirectory() {
   #if JUCE_WINDOWS
-      const char* homeDir = std::getenv("USERPROFILE");
+      const char* homeDir = std::getenv_s("USERPROFILE");
   #else
-      const char* homeDir = std::getenv("HOME");
+      const char* homeDir = std::getenv_s("HOME");
   #endif
       return homeDir != nullptr ? String(homeDir) : String();
   }
