@@ -20,10 +20,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, windows-latest]
+        os: [macos-12, windows-2019]
         include:
          
-          - os: macos-latest
+          - os: macos-12
             name: mac
             generator: Unix Makefiles
             flags: |
@@ -60,7 +60,8 @@ jobs:
             install_deps: ~/deps
             install_path: ~/juicydeps
             path: ./build/JuicySFPlugin_artefacts/Release
-          - os: windows-latest
+            
+          - os: windows-2019
             name: win
             generator: Visual Studio 17 2022
             flags: -Denable-jack=0 -Denable-pulseaudio=0 -Denable-ladspa=0 -Denable-dbus=0 -Denable-readline=0 -Denable-sdl2=0 -Denable-libinstpatch=0
@@ -74,12 +75,12 @@ jobs:
           submodules: recursive
 
       - name: Install macOS dependencies
-        if: matrix.os == 'macos-latest'
+        if: matrix.os == 'macos-12'
         run: |
           brew install fluidsynth pkg-config cmake pulseaudio portaudio jack dbus sdl2
 
       - name: Install Windows dependencies
-        if: matrix.os == 'windows-latest'
+        if: matrix.os == 'windows-2019'
         run: |
           mkdir ${{ matrix.install_deps }}
           cd ${{ matrix.install_deps }}
@@ -113,7 +114,7 @@ jobs:
           cmake --build ${{ env.dir_build }} --config ${{ env.type }} --target install
 
       - name: Copy Fluidsynth dependency
-        if: matrix.os == 'windows-latest'
+        if: matrix.os == 'windows-2019'
         run: |
           ls "fluidsynth/${{ env.dir_build }}/src/Release"
           mkdir -p "${{ env.dir_build }}"
