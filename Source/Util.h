@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
-#include <cstdlib> // for std::getenv
 
 #ifndef DEBUG_PRINT
   #if JUCE_DEBUG
