@@ -237,7 +237,7 @@ void FluidSynthModel::valueTreePropertyChanged(ValueTree& treeWhosePropertyHasCh
             StringRef path {String::fromCFString(cfPath.get())};
             if (path.isNotEmpty()) {
                 CFURLStartAccessingSecurityScopedResource(cfURL.get());
-                unloadAndLoadFont(path);
+                unloadAndLoadFont(expandHomeDirectory(path));
                 CFURLStopAccessingSecurityScopedResource(cfURL.get());
             }
         }
@@ -245,7 +245,7 @@ void FluidSynthModel::valueTreePropertyChanged(ValueTree& treeWhosePropertyHasCh
         if (property == StringRef("path")) {
             String soundFontPath = treeWhosePropertyHasChanged.getProperty("path", "");
             if (soundFontPath.isNotEmpty()) {
-                unloadAndLoadFont(soundFontPath);
+                unloadAndLoadFont(expandHomeDirectory(soundFontPath));
             }
         }
 #endif
