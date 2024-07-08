@@ -22,7 +22,6 @@ jobs:
       matrix:
         os: [windows-2022]
         include:
-         
           - os: windows-2022
             name: win
             generator: Visual Studio 17 2022
@@ -95,7 +94,11 @@ jobs:
           cd ${{ matrix.path }}
           find "$(pwd)"
 
+      - name: Remove juicysfplugin_SharedCode.lib
+        run: |
+          rm -f "${{ matrix.path }}/juicysfplugin_SharedCode.lib"
+
       - uses: actions/upload-artifact@v3
         with:
-          name: fluidsynth-${{ matrix.name }}
+          name: juicysfplugin-${{ matrix.name }}
           path: ${{ matrix.path }}
