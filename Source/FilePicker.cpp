@@ -92,7 +92,7 @@ void FilePicker::filenameComponentChanged (FilenameComponent*) {
     // currentPath = fileChooser.getCurrentFile().getFullPathName();
     // fluidSynthModel.onFileNameChanged(fileChooser.getCurrentFile().getFullPathName(), -1, -1);
     String path = fileChooser.getCurrentFile().getFullPathName();
-    path = convertToRelativeHomePath(path);
+    path = Util::convertToRelativeHomePath(path);
     Value value{valueTreeState.state.getChildWithName("soundFont").getPropertyAsValue("path", nullptr)};
     value.setValue(path);
 //    value = fileChooser.getCurrentFile().getFullPathName();
@@ -104,7 +104,7 @@ void FilePicker::valueTreePropertyChanged(ValueTree& treeWhosePropertyHasChanged
     // if (&treeWhosePropertyHasChanged == &valueTree) {
         if (property == StringRef("path")) {
             String soundFontPath = treeWhosePropertyHasChanged.getProperty("path", "");
-            soundFontPath = expandHomeDirectory(soundFontPath);
+            soundFontPath = Util::expandHomeDirectory(soundFontPath);
             DEBUG_PRINT(soundFontPath);
             setDisplayedFilePath(soundFontPath);
             // if (soundFontPath.isNotEmpty()) {
