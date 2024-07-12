@@ -31,7 +31,7 @@ add_subdirectory(JUCE)                    # If you've put JUCE in a subdirectory
 add_subdirectory(fluidsynth)
 
 # default to static libraries, since distribution is easier
-option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
+option(BUILD_SHARED_LIBS "Build using shared libraries" off)
 set(VST2_SDK_PATH "" CACHE STRING "VST2 SDK path")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
@@ -39,12 +39,12 @@ find_package(PkgConfig REQUIRED)
 
 if (BUILD_SHARED_LIBS)
   set(TARGET_STATIC_QUALIFIER "")
-else()
+else (BUILD_SHARED_LIBS)
   set(TARGET_STATIC_QUALIFIER "-static")
   set(PACKAGE_STATIC_QUALIFIER "_STATIC")
-endif()
+endif (BUILD_SHARED_LIBS)
 
-set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH OFF)
+set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH off)
 pkg_search_module(FLUIDSYNTH REQUIRED IMPORTED_TARGET fluidsynth>=2)
 set(FLUIDSYNTH_TARGET "PkgConfig::FLUIDSYNTH${TARGET_STATIC_QUALIFIER}")
 
@@ -52,23 +52,26 @@ if (EXTRA_ARCH_PKG_CONFIG_PATH)
   set(ENV{PKG_CONFIG_PATH} "${EXTRA_ARCH_PKG_CONFIG_PATH}")
   pkg_search_module(EXTRA_ARCH_FLUIDSYNTH REQUIRED IMPORTED_TARGET fluidsynth>=2)
   set(EXTRA_ARCH_FLUIDSYNTH_TARGET "PkgConfig::EXTRA_ARCH_FLUIDSYNTH${TARGET_STATIC_QUALIFIER}")
-endif()
+endif (EXTRA_ARCH_PKG_CONFIG_PATH)
 
 set(VST_COPY_DIR "${JUCE_VST_COPY_DIR}" CACHE STRING "VST2 installation dir")
 set(VST3_COPY_DIR "${JUCE_VST3_COPY_DIR}" CACHE STRING "VST3 installation dir")
 set(AU_COPY_DIR "${JUCE_AU_COPY_DIR}" CACHE STRING "AU installation dir")
 
+# If you are building a VST2 or AAX plugin, CMake needs to be told where to find these SDKs on your
+# system. This setup should be done before calling `juce_add_plugin`.
+
 if (VST2_SDK_PATH)
   set(HAS_VST2_SDK_PATH 1)
   set(VST2_FORMAT "VST")
   juce_set_vst2_sdk_path(${VST2_SDK_PATH})
-else()
+else (VST2_SDK_PATH)
   set(HAS_VST2_SDK_PATH 0)
-endif()
+endif (VST2_SDK_PATH)
 
 if (VST3_SDK_PATH)
   juce_set_vst3_sdk_path(${VST3_SDK_PATH})
-endif()
+endif (VST3_SDK_PATH)
 
 # juce_set_aax_sdk_path(...)
 
@@ -190,28 +193,4 @@ if (NOT BUILD_SHARED_LIBS AND CMAKE_SYSTEM_NAME STREQUAL "Windows")
   set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++ ${CMAKE_EXE_LINKER_FLAGS}")
   # the VST2 and VST3 distributions are "modules", so they don't listen to the EXE_LINKER flags
   set(CMAKE_MODULE_LINKER_FLAGS "-static-libgcc -static-libstdc++ ${CMAKE_MODULE_LINKER_FLAGS}")
-endif()
-
-# Copy necessary DLLs to the output directory
-if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-  add_custom_command(TARGET JuicySFPlugin POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    "${CMAKE_SOURCE_DIR}/lib_${CMAKE_GENERATOR_PLATFORM}/libgcc_s_dw2-1.dll"
-    "${CMAKE_SOURCE_DIR}/lib_${CMAKE_GENERATOR_PLATFORM}/libFLAC-8.dll"
-    "${CMAKE_SOURCE_DIR}/lib_${CMAKE_GENERATOR_PLATFORM}/libfluidsynth-2.dll"
-    "${CMAKE_SOURCE_DIR}/lib_${CMAKE_GENERATOR_PLATFORM}/libglib-2.0-0.dll"
-    "${CMAKE_SOURCE_DIR}/lib_${CMAKE_GENERATOR_PLATFORM}/libgmodule-2.0-0.dll"
-    "${CMAKE_SOURCE_DIR}/lib_${CMAKE_GENERATOR_PLATFORM}/libiconv-2.dll"
-    "${CMAKE_SOURCE_DIR}/lib_${CMAKE_GENERATOR_PLATFORM}/libintl-8.dll"
-    "${CMAKE_SOURCE_DIR}/lib_${CMAKE_GENERATOR_PLATFORM}/libogg-0.dll"
-    "${CMAKE_SOURCE_DIR}/lib_${CMAKE_GENERATOR_PLATFORM}/libpcre-1.dll"
-    "${CMAKE_SOURCE_DIR}/lib_${CMAKE_GENERATOR_PLATFORM}/libportaudio-2.dll"
-    "${CMAKE_SOURCE_DIR}/lib_${CMAKE_GENERATOR_PLATFORM}/libreadline8.dll"
-    "${CMAKE_SOURCE_DIR}/lib_${CMAKE_GENERATOR_PLATFORM}/libsndfile-1.dll"
-    "${CMAKE_SOURCE_DIR}/lib_${CMAKE_GENERATOR_PLATFORM}/libspeex-1.dll"
-    "${CMAKE_SOURCE_DIR}/lib_${CMAKE_GENERATOR_PLATFORM}/libtermcap-0.dll"
-    "${CMAKE_SOURCE_DIR}/lib_${CMAKE_GENERATOR_PLATFORM}/libvorbis-0.dll"
-    "${CMAKE_SOURCE_DIR}/lib_${CMAKE_GENERATOR_PLATFORM}/libvorbisenc-2.dll"
-    "${CMAKE_SOURCE_DIR}/lib_${CMAKE_GENERATOR_PLATFORM}/libwinpthread-1.dll"
-    $<TARGET_FILE_DIR:JuicySFPlugin>)
-endif()
+endif (NOT BUILD_SHARED_LIBS AND CMAKE_SYSTEM_NAME STREQUAL "Windows")
