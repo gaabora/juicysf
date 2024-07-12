@@ -52,7 +52,7 @@ jobs:
   build:
     strategy:
       matrix:
-        runner: ['windows', 'ubuntu', 'macos']
+        runner: ['windows', 'ubuntu']
     runs-on: ${{ matrix.runner }}-latest
     name: ${{ matrix.runner }}
     steps:
@@ -65,11 +65,6 @@ jobs:
         if: runner.os == 'Linux'
         run: |
             sudo apt-get update && sudo apt install ${{env.LINUX_DEPS}}
-
-      - name: MacOs - Install Deps
-        if: runner.os == 'macOS'
-        run: |
-            brew install glib libomp libsndfile
 
       - name: Windows - Install Deps (Vcpkg)
         if: runner.os == 'Windows'
