@@ -11,33 +11,49 @@
 #endif
 
 namespace Util {
+  inline String getHomeDirectory() {
+    static String homeDirectory = []() -> String {
+    #if JUCE_WINDOWS
+      const char* homeDir = std::getenv("USERPROFILE");
+    #else
+      const char* homeDir = std::getenv("HOME");
+    #endif
+      return homeDir != nullptr ? String(homeDir) : String();
+    }();
+
+    return homeDirectory;
+  }
+
+  inline String getAbsolutePath(const String& relativePath) {
+    String homeDir = getHomeDirectory();
+    String normalizedRelativePath = relativePath.replace("~", homeDir);
+    #if JUCE_WINDOWS
+    #else
+      normalizedRelativePath = normalizedRelativePath.replace("\\", "/");
+    #endif
+    File absoluteFile(normalizedRelativePath);
+    return absoluteFile.getFullPathName();
+  }
+
+  inline String getRelativeToHomePath(const String& absolutePath) {
+    String homeDir = getHomeDirectory();
+
+    if (absolutePath.startsWith(homeDir)) {
+      String resultPath = "~/" + absolutePath.substring(homeDir.length() + 1);
+      #if JUCE_WINDOWS
+        resultPath = resultPath.replace("\\", "/");
+      #else
+      #endif
+      
+      return resultPath;
+    }
+
+    return absolutePath;
+  }
+  
   inline int compare(int a, int b) {
     if (a > b) return 1;
     if (a == b) return 0;
     return -1;
-  }
-
-  inline String getHomeDirectory() {
-  #if JUCE_WINDOWS
-      const char* homeDir = std::getenv("USERPROFILE");
-  #else
-      const char* homeDir = std::getenv("HOME");
-  #endif
-      return homeDir != nullptr ? String(homeDir) : String();
-  }
-
-  inline String expandHomeDirectory(const String& path) {
-      if (path.startsWithChar('~')) {
-          return getHomeDirectory() + path.substring(1);
-      }
-      return path;
-  }
-
-  inline String convertToRelativeHomePath(const String& path) {
-      String homeDir = getHomeDirectory();
-      if (path.startsWith(homeDir)) {
-          return "~" + path.substring(homeDir.length());
-      }
-      return path;
   }
 }

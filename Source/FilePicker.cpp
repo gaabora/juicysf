@@ -41,7 +41,10 @@ FilePicker::FilePicker(
     setOpaque (true);
 
     // setDisplayedFilePath(fluidSynthModel.getCurrentSoundFontAbsPath());
-    setDisplayedFilePath(valueTreeState.state.getChildWithName("soundFont").getProperty("path", ""));
+    String soundFontPath = valueTreeState.state.getChildWithName("soundFont").getProperty("path", "");
+        DBG("######## valueTreePropertyChanged getAbsolutePath("+soundFontPath+")="+Util::getAbsolutePath(soundFontPath));
+    soundFontPath = Util::getAbsolutePath(soundFontPath);
+    setDisplayedFilePath(soundFontPath);
 
     addAndMakeVisible (fileChooser);
     fileChooser.addListener (this);
@@ -92,7 +95,8 @@ void FilePicker::filenameComponentChanged (FilenameComponent*) {
     // currentPath = fileChooser.getCurrentFile().getFullPathName();
     // fluidSynthModel.onFileNameChanged(fileChooser.getCurrentFile().getFullPathName(), -1, -1);
     String path = fileChooser.getCurrentFile().getFullPathName();
-    path = Util::convertToRelativeHomePath(path);
+        DBG("######## filenameComponentChanged getRelativeToHomePath("+path+")="+ Util::getRelativeToHomePath(path));
+    path = Util::getRelativeToHomePath(path);
     Value value{valueTreeState.state.getChildWithName("soundFont").getPropertyAsValue("path", nullptr)};
     value.setValue(path);
 //    value = fileChooser.getCurrentFile().getFullPathName();
@@ -104,9 +108,10 @@ void FilePicker::valueTreePropertyChanged(ValueTree& treeWhosePropertyHasChanged
     // if (&treeWhosePropertyHasChanged == &valueTree) {
         if (property == StringRef("path")) {
             String soundFontPath = treeWhosePropertyHasChanged.getProperty("path", "");
-            soundFontPath = Util::expandHomeDirectory(soundFontPath);
+                DBG("######## valueTreePropertyChanged getAbsolutePath("+soundFontPath+")="+Util::getAbsolutePath(soundFontPath));
+            soundFontPath = Util::getAbsolutePath(soundFontPath);
             DEBUG_PRINT(soundFontPath);
-            setDisplayedFilePath(soundFontPath);
+            // setDisplayedFilePath(soundFontPath);
             // if (soundFontPath.isNotEmpty()) {
             //     loadFont(soundFontPath);
             // }
@@ -119,6 +124,8 @@ void FilePicker::setDisplayedFilePath(const String& path) {
         return;
     }
     // currentPath = path;
+
+    DBG("######## setDisplayedFilePath "+path);
     fileChooser.setCurrentFile(File(path), true, dontSendNotification);
 }
 
@@ -126,6 +133,7 @@ bool FilePicker::shouldChangeDisplayedFilePath(const String &path) {
     if (path.isEmpty()) {
         return false;
     }
+    DBG("######## shouldChangeDisplayedFilePath "+path+" VS "+ currentPath);
     if (path == currentPath) {
         return false;
     }

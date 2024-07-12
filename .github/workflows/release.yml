@@ -63,6 +63,7 @@ jobs:
             -DCMAKE_BUILD_TYPE="${{ env.type }}" \
             -DCMAKE_INSTALL_PREFIX="${{ matrix.install_path }}" \
             -DCMAKE_VERBOSE_MAKEFILE=1 \
+            -DBUILD_SHARED_LIBS=OFF \  # Ensure static library build
             -DNO_GUI=1 \
             ${{ matrix.flags }} \
             -S "${{ env.dir_source }}" \
@@ -84,6 +85,7 @@ jobs:
             -DCMAKE_BUILD_TYPE="${{ env.type }}" \
             -DCMAKE_PREFIX_PATH="${{ matrix.install_path }};${{ matrix.install_deps }}" \
             -DVST3_COPY_DIR="final" \
+            -DBUILD_SHARED_LIBS=OFF \  # Ensure static linking
             -S "${{ env.dir_source }}" \
             -B "${{ env.dir_build }}"
           PKG_CONFIG_PATH="${{ matrix.install_path }}/lib/pkgconfig;${{ matrix.install_deps }}/lib/pkgconfig;$PKG_CONFIG_PATH" \
