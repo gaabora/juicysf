@@ -52,8 +52,8 @@ jobs:
   build:
     strategy:
       matrix:
-        runner: ['windows', 'ubuntu']
-    runs-on: ${{ matrix.runner }}-latest
+        runner: ['windows-2022']
+    runs-on: ${{ matrix.runner }}
     name: ${{ matrix.runner }}
     steps:
       - name: Checkout Source Code
