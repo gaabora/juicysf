@@ -63,7 +63,6 @@ jobs:
             -DCMAKE_BUILD_TYPE="${{ env.type }}" \
             -DCMAKE_INSTALL_PREFIX="${{ matrix.install_path }}" \
             -DCMAKE_VERBOSE_MAKEFILE=1 \
-            -DBUILD_SHARED_LIBS=OFF \  # Ensure static library build
             -DNO_GUI=1 \
             ${{ matrix.flags }} \
             -S "${{ env.dir_source }}" \
