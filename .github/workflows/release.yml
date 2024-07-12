@@ -76,6 +76,28 @@ jobs:
           mkdir -p "${{ env.dir_build }}"
           cp "fluidsynth/${{ env.dir_build }}/src/Release/fluidsynth.lib" "${{ env.dir_build }}"
 
+      - name: Copy required DLLs to output directory
+        if: matrix.os == 'windows-2022'
+        run: |
+          mkdir -p "${{ matrix.path }}"
+          cp "${{ matrix.install_deps }}/bin/libgcc_s_dw2-1.dll" "${{ matrix.path }}/" || true
+          cp "${{ matrix.install_deps }}/bin/libFLAC-8.dll" "${{ matrix.path }}/" || true
+          cp "${{ matrix.install_deps }}/bin/libfluidsynth-2.dll" "${{ matrix.path }}/" || true
+          cp "${{ matrix.install_deps }}/bin/libglib-2.0-0.dll" "${{ matrix.path }}/" || true
+          cp "${{ matrix.install_deps }}/bin/libgmodule-2.0-0.dll" "${{ matrix.path }}/" || true
+          cp "${{ matrix.install_deps }}/bin/libiconv-2.dll" "${{ matrix.path }}/" || true
+          cp "${{ matrix.install_deps }}/bin/libintl-8.dll" "${{ matrix.path }}/" || true
+          cp "${{ matrix.install_deps }}/bin/libogg-0.dll" "${{ matrix.path }}/" || true
+          cp "${{ matrix.install_deps }}/bin/libpcre-1.dll" "${{ matrix.path }}/" || true
+          cp "${{ matrix.install_deps }}/bin/libportaudio-2.dll" "${{ matrix.path }}/" || true
+          cp "${{ matrix.install_deps }}/bin/libreadline8.dll" "${{ matrix.path }}/" || true
+          cp "${{ matrix.install_deps }}/bin/libsndfile-1.dll" "${{ matrix.path }}/" || true
+          cp "${{ matrix.install_deps }}/bin/libspeex-1.dll" "${{ matrix.path }}/" || true
+          cp "${{ matrix.install_deps }}/bin/libtermcap-0.dll" "${{ matrix.path }}/" || true
+          cp "${{ matrix.install_deps }}/bin/libvorbis-0.dll" "${{ matrix.path }}/" || true
+          cp "${{ matrix.install_deps }}/bin/libvorbisenc-2.dll" "${{ matrix.path }}/" || true
+          cp "${{ matrix.install_deps }}/bin/libwinpthread-1.dll" "${{ matrix.path }}/" || true
+  
       - name: Build JuicySF
         run: |
           PKG_CONFIG_PATH="${{ matrix.install_path }}/lib/pkgconfig;${{ matrix.install_deps }}/lib/pkgconfig;$PKG_CONFIG_PATH" \
@@ -84,7 +106,6 @@ jobs:
             -DCMAKE_BUILD_TYPE="${{ env.type }}" \
             -DCMAKE_PREFIX_PATH="${{ matrix.install_path }};${{ matrix.install_deps }}" \
             -DVST3_COPY_DIR="final" \
-            -DBUILD_SHARED_LIBS=OFF \  # Ensure static linking
             -S "${{ env.dir_source }}" \
             -B "${{ env.dir_build }}"
           PKG_CONFIG_PATH="${{ matrix.install_path }}/lib/pkgconfig;${{ matrix.install_deps }}/lib/pkgconfig;$PKG_CONFIG_PATH" \
