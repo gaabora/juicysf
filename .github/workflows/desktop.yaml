@@ -64,7 +64,7 @@ jobs:
       - name: Linux - Install Deps
         if: runner.os == 'Linux'
         run: |
-            sudo apt-get update && sudo apt install ${{env.LINUX_DEPS}}
+            sudo apt-get update && sudo apt install -y ${{env.LINUX_DEPS}}
 
       - name: Windows - Install Deps (Vcpkg)
         if: runner.os == 'Windows'
@@ -73,7 +73,16 @@ jobs:
           vcpkgDirectory: '${{ github.workspace }}/vcpkg'
           vcpkgGitCommitId: 5568f110b509a9fd90711978a7cb76bae75bb092
           runVcpkgInstall: true
-          runVcpkgFormatString: "[`install`, `--recurse`, `--clean-after-build`, `--x-install-root`, `./vcpkg_installed`, `--triplet`, `${{env.VCPKG_TRIPLET}}`]"
+          runVcpkgFormatString: |
+            [
+              "install",
+              "--recurse",
+              "--clean-after-build",
+              "--x-install-root",
+              "${{github.workspace}}/vcpkg_installed",
+              "--triplet",
+              "${{env.VCPKG_TRIPLET}}"
+            ]
 
       - name: Configure CMake (FluidSynth)
         run: cmake -B ${{env.FLUIDSYNTH_BUILD_DIR}} -S ${{env.FLUIDSYNTH_DIR}} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} ${{env.FLUIDSYNTH_BUILD_ARGS}}
@@ -119,7 +128,5 @@ jobs:
             ${{env.VCPKG_INSTALL_DIR}}/bin/sndfile.dll
             ${{env.VCPKG_INSTALL_DIR}}/bin/vorbis.dll
             ${{env.VCPKG_INSTALL_DIR}}/bin/vorbisenc.dll
-
           if-no-files-found: error
           retention-days: 1
-
