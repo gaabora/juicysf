@@ -1,0 +1,26 @@
+name: CI
+
+on:
+    workflow_dispatch:
+
+jobs:
+  build:
+
+    runs-on: macos-11
+    
+    steps:
+    - name: Get JUCE
+      run: git -C /Applications clone --depth=1 --branch 5.4.3 https://github.com/WeAreROLI/JUCE.git
+    - uses: actions/checkout@v1
+    - name: Build AU
+      run: xcodebuild -scheme 'juicysfplugin - AU' -configuration 'Debug' -project Builds/MacOSX/juicysfplugin.xcodeproj -UseModernBuildSystem=NO GCC_PREPROCESSOR_DEFINITIONS='$GCC_PREPROCESSOR_DEFINITIONS JUCE_VST3_CAN_REPLACE_VST2=0' 
+    - name: Build VST3
+      run: xcodebuild -scheme 'juicysfplugin - VST3' -configuration 'Debug' -project Builds/MacOSX/juicysfplugin.xcodeproj -UseModernBuildSystem=NO GCC_PREPROCESSOR_DEFINITIONS='$GCC_PREPROCESSOR_DEFINITIONS JUCE_VST3_CAN_REPLACE_VST2=0' 
+    - name: Build Standalone Plugin
+      run: xcodebuild -scheme 'juicysfplugin - Standalone Plugin' -configuration 'Debug' -project Builds/MacOSX/juicysfplugin.xcodeproj -UseModernBuildSystem=NO GCC_PREPROCESSOR_DEFINITIONS='$GCC_PREPROCESSOR_DEFINITIONS JUCE_VST3_CAN_REPLACE_VST2=0' 
+    - name: Archive
+      run: ./archive-for-distribution.sh "$GITHUB_SHA"
+    - uses: actions/upload-artifact@master
+      with:
+        name: my-artifact
+        path: build/juicysfplugin.$GITHUB_SHA.Release.tar.xz
