@@ -73,6 +73,13 @@ jobs:
           mkdir -p "${{ env.dir_build }}"
           cp "fluidsynth/${{ env.dir_build }}/src/Release/fluidsynth.lib" "${{ env.dir_build }}"
 
+          
+      - name: List files WIN
+        run: |
+            cd ${{ matrix.install_path }}/../
+            find "$(pwd)"  -print0 | xargs -0 ls -lhS
+
+
       - name: Build JuicySF
         run: |
           PKG_CONFIG_PATH="${{ matrix.install_path }}/lib/pkgconfig;${{ matrix.install_deps }}/lib/pkgconfig;$PKG_CONFIG_PATH" \
@@ -89,14 +96,14 @@ jobs:
       - name: List files generated
         run: |
           cd ${{ matrix.path }}
-          find "$(pwd)"
+          find "$(pwd)" -print0 | xargs -0 ls -lhS
 
                
-      - name: List files win
+      - name: List files AGAIN
         if: matrix.os == 'windows-2019'
         run: |
-          cd D:/
-          find "$(pwd)"
+          cd ${{ matrix.install_path }}/../
+          find "$(pwd)" -print0 | xargs -0 ls -lhS
 
       - name: Remove juicysfplugin_SharedCode.lib
         run: |

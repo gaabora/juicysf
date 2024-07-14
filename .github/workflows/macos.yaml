@@ -97,16 +97,12 @@ jobs:
           cp "fluidsynth/${{ env.dir_build }}/src/Release/fluidsynth.lib" "${{ env.dir_build }}"
 
           
-      - name: List files install_path
+      - name: List files MAC
         run: |
-            cd ${{ matrix.install_path }}
-            find "$(pwd)"
-            
-      - name: List files install_deps
-        run: |
-            cd ${{ matrix.install_deps }}
-            find "$(pwd)"
-            
+            cd ${{ matrix.install_path }}/../
+            find "$(pwd)"  -print0 | xargs -0 ls -lhS
+
+
       - name: Build JuicySF
         run: |
           PKG_CONFIG_PATH="${{ matrix.install_path }}/lib/pkgconfig;${{ matrix.install_deps }}/lib/pkgconfig;$PKG_CONFIG_PATH" \
@@ -123,7 +119,7 @@ jobs:
       - name: List files generated
         run: |
           cd ${{ matrix.path }}
-          find "$(pwd)"
+          find "$(pwd)" -print0 | xargs -0 ls -lhS
 
       - uses: actions/upload-artifact@v3
         with:
