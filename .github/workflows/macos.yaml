@@ -99,7 +99,7 @@ jobs:
           
       - name: List files MAC
         run: |
-            cd ${{ matrix.install_path }}/../
+            cd ${{ matrix.install_path }}/../juicysf
             find "$(pwd)"  -print0 | xargs -0 ls -lhS
 
 
