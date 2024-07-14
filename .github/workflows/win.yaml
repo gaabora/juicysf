@@ -1,0 +1,108 @@
+name: win
+defaults:
+  run:
+    shell: bash
+
+on:
+  workflow_dispatch:
+
+env:
+  dir_build: build
+  dir_source: .
+  type: Release
+
+jobs:
+  build:
+    name: Build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-2022]
+        include:
+          - os: windows-2022
+            name: win
+            generator: Visual Studio 17 2022
+            flags: -Denable-jack=0 -Denable-pulseaudio=0 -Denable-ladspa=0 -Denable-dbus=0 -Denable-readline=0 -Denable-sdl2=0 -Denable-libinstpatch=0
+            install_deps: D:/deps
+            install_path: D:/juicydeps
+            path: ./build/JuicySFPlugin_artefacts/Release
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Install Windows dependencies
+        if: matrix.os == 'windows-2022'
+        run: |
+          mkdir ${{ matrix.install_deps }}
+          cd ${{ matrix.install_deps }}
+          curl -LfsS -o gtk-bundle-dev.zip http://ftp.gnome.org/pub/gnome/binaries/win64/gtk+/2.22/gtk+-bundle_2.22.1-20101229_win64.zip
+          curl -LfsS -o libsndfile-dev.zip http://www.mega-nerd.com/libsndfile/files/libsndfile-1.0.28-w64.zip
+          7z x -aos -- gtk-bundle-dev.zip
+          7z x -aos -- libsndfile-dev.zip
+          mv ./lib/libsndfile-1.lib ./lib/sndfile.lib
+          mv ./lib/libsndfile-1.def ./lib/sndfile.def
+          rm -rf C:/Strawberry/perl/bin/pkg-config*
+          echo "${{ matrix.install_deps }}/bin;${{ matrix.install_path }}/bin" >> $GITHUB_PATH
+
+      - name: Build JUCE dependency
+        run: |
+          cd JUCE
+          cmake -B cmake-build-install -DCMAKE_BUILD_TYPE="${{ env.type }}" -DCMAKE_INSTALL_PREFIX="${{ matrix.install_path }}"
+          cmake --build cmake-build-install --target install
+
+      - name: Build Fluidsynth dependency
+        run: |
+          cd fluidsynth
+          cmake \
+            -G "${{ matrix.generator }}" \
+            -DCMAKE_BUILD_TYPE="${{ env.type }}" \
+            -DCMAKE_INSTALL_PREFIX="${{ matrix.install_path }}" \
+            -DCMAKE_VERBOSE_MAKEFILE=1 \
+            -DNO_GUI=1 \
+            ${{ matrix.flags }} \
+            -S "${{ env.dir_source }}" \
+            -B "${{ env.dir_build }}"
+          cmake --build ${{ env.dir_build }} --config ${{ env.type }} --target install
+
+      - name: Copy Fluidsynth dependency
+        if: matrix.os == 'windows-2022'
+        run: |
+          ls "fluidsynth/${{ env.dir_build }}/src/Release"
+          mkdir -p "${{ env.dir_build }}"
+          cp "fluidsynth/${{ env.dir_build }}/src/Release/fluidsynth.lib" "${{ env.dir_build }}"
+
+      - name: Build JuicySF
+        run: |
+          PKG_CONFIG_PATH="${{ matrix.install_path }}/lib/pkgconfig;${{ matrix.install_deps }}/lib/pkgconfig;$PKG_CONFIG_PATH" \
+          cmake \
+            -G "${{ matrix.generator }}" \
+            -DCMAKE_BUILD_TYPE="${{ env.type }}" \
+            -DCMAKE_PREFIX_PATH="${{ matrix.install_path }};${{ matrix.install_deps }}" \
+            -DVST3_COPY_DIR="final" \
+            -S "${{ env.dir_source }}" \
+            -B "${{ env.dir_build }}"
+          PKG_CONFIG_PATH="${{ matrix.install_path }}/lib/pkgconfig;${{ matrix.install_deps }}/lib/pkgconfig;$PKG_CONFIG_PATH" \
+          cmake --build ${{ env.dir_build }} --config ${{ env.type }}
+
+      - name: List files generated
+        run: |
+          cd ${{ matrix.path }}
+          find "$(pwd)"
+
+               
+      - name: List files win
+        if: matrix.os == 'windows-2019'
+        run: |
+          cd D:/
+          find "$(pwd)"
+
+      - name: Remove juicysfplugin_SharedCode.lib
+        run: |
+          rm -f "${{ matrix.path }}/juicysfplugin_SharedCode.lib"
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: juicysfplugin-${{ matrix.name }}
+          path: ${{ matrix.path }}

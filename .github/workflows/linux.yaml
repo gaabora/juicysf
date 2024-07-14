@@ -1,0 +1,129 @@
+name: linux
+
+defaults:
+  run:
+    shell: bash
+
+on:
+  workflow_dispatch:
+
+env:
+  dir_build: build
+  dir_source: .
+  type: Release
+
+jobs:
+  build:
+    name: Build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+        include:
+          - os: ubuntu-20.04
+            name: linux
+            generator: Unix Makefiles
+            flags: |
+              -DBUILD_SHARED_LIBS=off \
+              -Denable-portaudio=off \
+              -Denable-dbus=off \
+              -Denable-aufile=off \
+              -Denable-ipv6=off \
+              -Denable-jack=off \
+              -Denable-ladspa=off \
+              -Denable-libinstpatch=off \
+              -Denable-libsndfile=on \
+              -Denable-midishare=off \
+              -Denable-opensles=off \
+              -Denable-oboe=off \
+              -Denable-network=off \
+              -Denable-oss=off \
+              -Denable-dsound=off \
+              -Denable-wasapi=off \
+              -Denable-waveout=off \
+              -Denable-winmidi=off \
+              -Denable-sdl2=off \
+              -Denable-pkgconfig=on \
+              -Denable-pulseaudio=off \
+              -Denable-readline=off \
+              -Denable-threads=on \
+              -Denable-openmp=on \
+              -Denable-coreaudio=off \
+              -Denable-coremidi=off \
+              -Denable-framework=on \
+              -Denable-lash=off \
+              -Denable-alsa=off \
+              -Denable-systemd=off \
+            install_deps: ~/deps
+            install_path: ~/juicydeps
+            path: ./build/JuicySFPlugin_artefacts/Release
+            
+          
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Install Linux dependencies
+        if: matrix.os == 'ubuntu-20.04'
+        run: |
+          sudo apt-get update && sudo apt-get install cmake-data cmake libglib2.0-0 libsndfile-dev libasound2-dev libjack-jackd2-dev portaudio19-dev libsdl2-dev libpulse-dev libdbus-1-dev libsystemd-dev libinstpatch-dev libreadline-dev g++ clang clang-tidy ladspa-sdk libfluidsynth-dev
+
+     
+      - name: Build JUCE dependency
+        run: |
+          cd JUCE
+          cmake -B cmake-build-install -DCMAKE_BUILD_TYPE="${{ env.type }}" -DCMAKE_INSTALL_PREFIX="${{ matrix.install_path }}"
+          cmake --build cmake-build-install --target install
+
+      - name: Build Fluidsynth dependency
+        run: |
+          cd fluidsynth
+          cmake \
+            -G "${{ matrix.generator }}" \
+            -DCMAKE_BUILD_TYPE="${{ env.type }}" \
+            -DCMAKE_INSTALL_PREFIX="${{ matrix.install_path }}" \
+            -DCMAKE_VERBOSE_MAKEFILE=1 \
+            -DNO_GUI=1 \
+            ${{ matrix.flags }} \
+            -S "${{ env.dir_source }}" \
+            -B "${{ env.dir_build }}"
+          cmake --build ${{ env.dir_build }} --config ${{ env.type }} --target install
+    
+      - name: List files install_path
+        run: |
+            cd ${{ matrix.install_path }}
+            find "$(pwd)"
+            
+      - name: List files install_deps
+        run: |
+            cd ${{ matrix.install_deps }}
+            find "$(pwd)"
+
+      - name: Build JuicySF
+        run: |
+          PKG_CONFIG_PATH="${{ matrix.install_path }}/lib/pkgconfig;${{ matrix.install_deps }}/lib/pkgconfig;$PKG_CONFIG_PATH" \
+          cmake \
+            -G "${{ matrix.generator }}" \
+            -DCMAKE_BUILD_TYPE="${{ env.type }}" \
+            -DCMAKE_PREFIX_PATH="${{ matrix.install_path }};${{ matrix.install_deps }}" \
+            -DVST3_COPY_DIR="final" \
+            -S "${{ env.dir_source }}" \
+            -B "${{ env.dir_build }}"
+          PKG_CONFIG_PATH="${{ matrix.install_path }}/lib/pkgconfig;${{ matrix.install_deps }}/lib/pkgconfig;$PKG_CONFIG_PATH" \
+          cmake --build ${{ env.dir_build }} --config ${{ env.type }}
+
+      - name: List files generated
+        run: |
+          cd ${{ matrix.path }}
+          find "$(pwd)"
+
+      - name: Remove juicysfplugin_SharedCode.lib
+        run: |
+          rm -f "${{ matrix.path }}/juicysfplugin_SharedCode.lib"
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: juicysfplugin-${{ matrix.name }}
+          path: ${{ matrix.path }}
